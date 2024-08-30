@@ -12,6 +12,8 @@ Created by Andres Sepulveda Morales & Patrick Huang
 
 Python package list is contained in `requirements.txt`. 
 
+You may need to install additional extensions to utilize Python on your editor of choice. Consider https://marketplace.visualstudio.com/items?itemName=ms-python.python if you're using VSCode. 
+
 ## Installation Instructions
 
 I am utilizing my CMD on Windows, however most steps will be similar for MacOs / Linux. 
