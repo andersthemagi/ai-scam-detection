@@ -5,6 +5,7 @@ def menu():
     st.sidebar.page_link("pages/audio.py", label="Audio Example")
     st.sidebar.page_link("pages/text.py", label="Text Example")
     st.sidebar.page_link("pages/email.py", label="Email Example")
+    st.sidebar.page_link("pages/scam-education.py", label="Scam Education")
 
 def menu_with_redirect():
     # Once we have criteria on what information we need to run this, 
