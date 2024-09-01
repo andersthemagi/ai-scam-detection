@@ -1,6 +1,5 @@
 import streamlit as st
 from openai import OpenAI
-from menu import menu_with_redirect
 
 emails = [
     {
@@ -36,6 +35,8 @@ emails = [
     }
 ]
 
+st.set_page_config(page_title="Email Analyzer", layout="wide")
+
 with st.sidebar:
     st.title("Email Viewer")
     
@@ -54,30 +55,29 @@ with st.sidebar:
     st.write(f"**To:** {selected_email['recipient']}")
     st.write(selected_email['content'])
 
-st.title("Email Example")
+st.title("Email Analyzer")
 
 st.text("--Consistently monitoring emails and scanning possible scams...--")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-prompt = (
+prompt = f"""
 Please provide a concise analysis of the following email for potential phishing or scam characteristics. Limit your response to 3-5 sentences.
 
 ### Email Details:
-- From: {sender_email}
-- Date: {email_date}
-- To: {recipient_email}
-- Subject: {email_subject}
-- Content: {email_content}
+- From: {selected_email['sender']}
+- Date: {selected_email['date']}
+- To: {selected_email['recipient']}
+- Subject: {selected_email['subject']}
+- Content: {selected_email['content']}
 
 ### Questions:
 1. Is this email a scam or legitimate?
 2. What specific indicators led you to this conclusion? (List 2-3 key points)
 3. What actions should the recipient take next? (e.g., report, delete)
 4. What preventive measures can the recipient take against similar scams?
-)
-
+"""
 
 if not st.session_state.messages or st.session_state.messages[0]["content"] != prompt:
     st.session_state.messages = [{"role": "user", "content": prompt}]
@@ -85,14 +85,13 @@ if not st.session_state.messages or st.session_state.messages[0]["content"] != p
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-4o-mini"
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-if "messages" in st.session_state:
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if prompt := st.chat_input("Type 're' to test or enter your first email"):
+if prompt := st.chat_input("Type 're' to reanalyze or enter your own email content"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -111,3 +110,4 @@ if prompt := st.chat_input("Type 're' to test or enter your first email"):
 
 if st.button("Return to Home", type="primary"):
     st.switch_page("app.py")
+
