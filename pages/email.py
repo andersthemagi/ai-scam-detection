@@ -62,32 +62,20 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 prompt = (
-    "You are a cybersecurity expert with specialized training in identifying phishing scams, fraud attempts, "
-    "and other types of malicious emails. Your goal is to carefully analyze the email provided below "
-    "and determine whether it is a scam or a legitimate message.\n\n"
-    "When conducting your analysis, please consider the following aspects:\n"
-    "1. **Sender Information**: Examine the sender's email address and domain. Is it consistent with the claimed source? "
-    "Look out for misspellings, unusual domains, or suspicious characters.\n"
-    "2. **Language and Tone**: Analyze the language used in the email. Does it employ urgent or threatening language, "
-    "create a sense of fear or urgency, or contain grammatical errors or awkward phrasing that might indicate a scam?\n"
-    "3. **Content and Requests**: Review the content of the email, including any requests for personal information, "
-    "financial details, or login credentials. Scammers often ask for sensitive information under the guise of necessity.\n"
-    "4. **Links and Attachments**: Identify any links or attachments in the email. Are the links disguised or "
-    "do they lead to suspicious or unfamiliar websites? Are attachments expected, or could they be harmful?\n"
-    "5. **Cross-reference with Resources**: Utilize resources like https://scamsearch.io/ or other reliable sources "
-    "to check if similar emails have been reported as scams.\n\n"
-    "Here is the email I received:\n"
-    f"From: {selected_email['sender']}\n"
-    f"Date: {selected_email['date']}\n"
-    f"To: {selected_email['recipient']}\n"
-    f"Subject: {selected_email['subject']}\n\n"
-    f"{selected_email['content']}\n\n"
-    "Based on your detailed analysis, answer the following questions:\n"
-    "1. **Is this email a scam or legitimate?** Provide a clear and concise answer.\n"
-    "2. **What specific indicators led you to this conclusion?** Identify and explain at least three key points that support your decision.\n"
-    "3. **What actions should the recipient take next?** Provide recommendations on how to handle the email, including whether it should be reported, deleted, or acted upon.\n"
-    "4. **How could the recipient protect themselves from similar scams in the future?** Offer preventive measures and tips for avoiding such scams.\n"
-    "Please structure your response clearly, with headings for each question."
+Please provide a concise analysis of the following email for potential phishing or scam characteristics. Limit your response to 3-5 sentences.
+
+### Email Details:
+- From: {sender_email}
+- Date: {email_date}
+- To: {recipient_email}
+- Subject: {email_subject}
+- Content: {email_content}
+
+### Questions:
+1. Is this email a scam or legitimate?
+2. What specific indicators led you to this conclusion? (List 2-3 key points)
+3. What actions should the recipient take next? (e.g., report, delete)
+4. What preventive measures can the recipient take against similar scams?
 )
 
 
