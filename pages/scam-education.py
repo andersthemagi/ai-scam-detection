@@ -5,10 +5,8 @@ menu_with_redirect()
 
 def text_message_1(): 
     st.subheader("Example #1")
-    with st.container(border=True):
-        st.markdown("""
-        Is this a scam text? Choose your answer below.
-                    
+    with st.chat_message("assistant"):
+        st.markdown("""       
         Bank of America ALERT. A temporary hold has been placed on your credit card starting with 4519**. To reactivate your access, please verify your card number when you visit https://tinyurl.com/4hfj8rz2.
         """)
     text_1_choice = st.radio("Is Example #1 a scam?", ["Yes", "No", "Maybe?"], index=None)
@@ -19,10 +17,8 @@ def text_message_1():
 
 def text_message_2(): 
     st.subheader("Example #2 - Text")
-    with st.container(border=True):
-        st.markdown("""
-        Is this a scam text? Choose your answer below.
-                    
+    with st.chat_message("assistant"):
+        st.markdown("""        
         Free Msg Ent Credit Union Fraud Alert: We noticed suspicious activity on your Visa Debit Card ending in 1234 and need to review 1 transaction(s) with you.
 
         Available to verify now? Reply YES. If not, reply NO and we will contact you later.
@@ -38,10 +34,7 @@ def text_message_2():
 
 def email_1(): 
     st.subheader("Example #3 - Email")
-    with st.container(border=True):
-        st.markdown("""
-        Is this a scam email? Choose your answer below.
-        """)
+    with st.chat_message("assistant"):
         st.image("content/email-example-1.png")
     email_1_choice = st.radio("Is Example #3 a scam?", ["Yes", "No", "Maybe?"], index=None)
     if email_1_choice == "Yes" or email_1_choice == "Maybe?":
@@ -51,10 +44,7 @@ def email_1():
 
 def email_2(): 
     st.subheader("Example #4 - Email")
-    with st.container(border=True):
-        st.markdown("""
-        Is this a scam email? Choose your answer below.
-        """)
+    with st.chat_message("assistant"):
         st.image("content/email-example-2.png")
     email_2_choice = st.radio("Is Example #4 a scam?", ["Yes", "No", "Maybe?"], index=None)
     if email_2_choice == "No":
@@ -64,10 +54,8 @@ def email_2():
 
 def audio_1():
     st.subheader("Example #5 - Audio")
-    st.markdown("""
-    Is this a scam call? Choose your answer below.
-    """)
-    st.audio("content/audio-example-1.mp3")
+    with st.chat_message("assistant"):
+        st.audio("content/audio-example-1.mp3")
     audio_choice = st.radio("Is Example #5 a scam?", ["Yes", "No", "Maybe?"], index=None)
     if audio_choice == "Yes":
         st.success("You are correct! Notice the intonation of the voice and the robotic way it says what it is trying to say. No real person would sound like this.")
@@ -81,6 +69,7 @@ def main():
     
     This section shows rudimentary examples on how we can educate users on what is considered a scam based on our expected vectors of attack. Over time, efforts on making the process more intuitive, engaging (potentially gamification?), and user-friendly would be the priority.           
     """)
+    st.write("Is this a scam? See the example and choose your answer below.")
     current_step = st.selectbox("Examples", [
         "Example #1 - Text", 
         "Example #2 - Text",
