@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+import language_tool_python  # Importing LanguageTool for grammar checking
 
 # Sample SMS messages
 sms_messages = [
@@ -30,8 +31,12 @@ sms_messages = [
     }
 ]
 
+# Initialize the LanguageTool checker
+tool = language_tool_python.LanguageTool('en-US')
+
 st.set_page_config(page_title="SMS Analyzer", layout="wide")
 
+# Sidebar with SMS selection
 with st.sidebar:
     st.title("SMS Viewer")
     
@@ -49,13 +54,36 @@ with st.sidebar:
     st.write(f"**To:** {selected_sms['recipient']}")
     st.write(selected_sms['content'])
 
+# Main SMS analysis
 st.title("SMS Analyzer")
-
 st.text("--Consistently monitoring SMS messages and scanning possible scams...--")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Function to highlight grammar errors
+def highlight_grammar_errors(text):
+    matches = tool.check(text)
+    errors = []
+    for match in matches:
+        errors.append({
+            "error": match.message,
+            "incorrect_text": match.context,
+            "suggestions": match.replacements
+        })
+    return errors
 
+# Analyze the selected SMS for grammar errors
+grammar_errors = highlight_grammar_errors(selected_sms['content'])
+
+# Display grammar errors found
+if grammar_errors:
+    st.subheader("Grammar Errors Found:")
+    for error in grammar_errors:
+        st.write(f"- Error: {error['error']}")
+        st.write(f"  Incorrect Text: \"{error['incorrect_text']}\"")
+        st.write(f"  Suggestions: {error['suggestions']}")
+else:
+    st.write("No significant grammar errors found.")
+
+# Prompt for OpenAI analysis
 prompt = f"""
 Please provide a concise analysis of the following SMS for potential phishing or scam characteristics. Limit your response to 3-5 sentences.
 
@@ -72,23 +100,30 @@ Please provide a concise analysis of the following SMS for potential phishing or
 4. What preventive measures can the recipient take against similar scams?
 """
 
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 if not st.session_state.messages or st.session_state.messages[0]["content"] != prompt:
     st.session_state.messages = [{"role": "user", "content": prompt}]
 
+# Initialize OpenAI client
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 if "openai_model" not in st.session_state:
     st.session_state["openai_model"] = "gpt-3.5-turbo"
 
+# Display the message content
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# Handling user input
 if prompt := st.chat_input("Type 're' to reanalyze or enter your own SMS content"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # Streaming the response from OpenAI
     with st.chat_message("assistant"):
         stream = client.chat.completions.create(
             model=st.session_state["openai_model"],
@@ -101,6 +136,7 @@ if prompt := st.chat_input("Type 're' to reanalyze or enter your own SMS content
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
 
+# Button to return to home
 if st.button("Return to Home", type="primary"):
     st.switch_page("app.py")
 
