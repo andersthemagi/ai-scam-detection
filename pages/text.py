@@ -1,97 +1,76 @@
 import streamlit as st
 from openai import OpenAI
-import spacy
 from textblob import TextBlob
 import re
 
-# Load spaCy model
-nlp = spacy.load("en_core_web_sm")
-
-# Function to analyze text and highlight issues
+# Function to analyze SMS text and highlight issues
 def analyze_text(text):
-    doc = nlp(text)
     blob = TextBlob(text)
     
-    # Identify potential grammatical errors
-    grammar_errors = [token.text for token in doc if token.dep_ == 'ROOT' and token.pos_ not in ['VERB', 'AUX']]
+    # Identify potential grammatical errors (basic approach using TextBlob's part of speech tagging)
+    grammar_errors = [word for word, pos in blob.tags if pos not in ['NN', 'VB', 'JJ', 'RB']]
     
     # Identify suspicious elements
-    suspicious_elements = []
-    suspicious_elements.extend(re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text))  # URLs
-    suspicious_elements.extend([ent.text for ent in doc.ents if ent.label_ in ['MONEY', 'PERCENT']])  # Money and percentages
+    suspicious_elements = re.findall(r'http[s]?://\S+|www\.\S+', text)  # URLs
+    suspicious_elements.extend(re.findall(r'\b\d{1,3}(?:,\d{3})*(?:\.\d{2})?\b', text))  # Money amounts
     
     # Identify urgent language
-    urgent_words = ['urgent', 'immediately', 'now', 'hurry', 'quick']
-    urgent_phrases = [word for word in urgent_words if word.lower() in text.lower()]
+    urgent_phrases = []
+    urgent_words = ['urgent', 'immediately', 'now', 'hurry', 'quick', 'important', 'action required', 'act now', 'limited time']
+    for word in urgent_words:
+        if re.search(r'\b' + re.escape(word) + r'\b', text, re.IGNORECASE):
+            urgent_phrases.append(word)
     
     return grammar_errors, suspicious_elements, urgent_phrases, blob.sentiment.polarity
 
-emails = [
+# Example SMS messages
+messages = [
     {
-        "subject": "Support Center: Tax refund",
-        "sender": "Hugo Enrique osorio <hugo23_5@hotmail.com>",
-        "date": "18 October 2016 at 13:34:36 BST",
-        "recipient": "youremailaddress@hotmail.co.uk",
+        "sender": "+447123456789",
+        "date": "1 September 2024 at 09:00:00 UTC",
         "content": (
-            "HM Revenue & Customs\n"
-            "HMRC : H0928753\n\n"
-            "Hello\n\n"
-            "New Tax Calculation\n"
-            "We have determined that you are eligible to receive a tax refund of 209.27 GBP.\n"
-            "Please submit the tax refund request\n"
-            "Please Click Refund and submit the tax refund request.\n\n"
-            "Note: A refund can be delayed for a variety of reasons, for example submitting invalid records or applying after the deadline."
+            "URGENT: Your account has been compromised. Please visit http://fakebank.com to secure your account now!"
         )
     },
     {
-        "subject": "Attention! Your PayPal account will close soon!",
-        "sender": "support@paypal.com",
-        "date": "1 September 2024 at 09:00:00 UTC",
-        "recipient": "youremailaddress@example.com",
+        "sender": "+1234567890",
+        "date": "18 October 2024 at 13:34:36 BST",
         "content": (
-            "Dear Member,\n\n"
-            "We have faced some problems with your account. Please update the account. If you do not update, it will be closed.\n\n"
-            "To Update your account, just confirm your information. (It only takes a minute.)\n\n"
-            "It's easy:\n"
-            "1. Click the link below to open a secure browser window.\n"
-            "2. Confirm that you're the owner of the account, and then follow the instructions.\n"
-            "Relog in to your account now."
+            "Congratulations! You've won a prize of $1000. Claim it now by visiting www.prizeclaim.com!"
         )
     }
 ]
 
-st.set_page_config(page_title="Email Analyzer", layout="wide")
+st.set_page_config(page_title="SMS Analyzer", layout="wide")
 
 with st.sidebar:
-    st.title("Email Viewer")
+    st.title("SMS Viewer")
     
-    selected_email_index = st.selectbox(
+    selected_message_index = st.selectbox(
         "Select an example", 
-        options=["Example 1", "Example 2"], 
+        options=["Message 1", "Message 2"], 
         index=0
     )
     
-    email_mapping = {"Example 1": 0, "Example 2": 1}
-    selected_email = emails[email_mapping[selected_email_index]]
+    message_mapping = {"Message 1": 0, "Message 2": 1}
+    selected_message = messages[message_mapping[selected_message_index]]
     
-    st.subheader(f"Subject: {selected_email['subject']}")
-    st.write(f"**From:** {selected_email['sender']}")
-    st.write(f"**Date:** {selected_email['date']}")
-    st.write(f"**To:** {selected_email['recipient']}")
-    st.write(selected_email['content'])
+    st.subheader(f"From: {selected_message['sender']}")
+    st.write(f"**Date:** {selected_message['date']}")
+    st.write(selected_message['content'])
 
-st.title("Email Analyzer")
+st.title("SMS Analyzer")
 
-st.text("--Consistently monitoring emails and scanning possible scams...--")
+st.text("--Consistently monitoring SMS messages and scanning possible scams...--")
 
-# Analyze the email content
-grammar_errors, suspicious_elements, urgent_phrases, sentiment = analyze_text(selected_email['content'])
+# Analyze the SMS content
+grammar_errors, suspicious_elements, urgent_phrases, sentiment = analyze_text(selected_message['content'])
 
 # Display the analysis results
-st.subheader("Email Content Analysis")
+st.subheader("SMS Content Analysis")
 
-# Display the email content with highlighted elements
-content = selected_email['content']
+# Display the SMS content with highlighted elements
+content = selected_message['content']
 for error in grammar_errors:
     content = content.replace(error, f"<span style='background-color: yellow'>{error}</span>")
 for element in suspicious_elements:
@@ -112,17 +91,15 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 prompt = f"""
-Please provide a concise analysis of the following email for potential phishing or scam characteristics. Limit your response to 3-5 sentences.
+Please provide a concise analysis of the following SMS for potential phishing or scam characteristics. Limit your response to 3-5 sentences.
 
-### Email Details:
-- From: {selected_email['sender']}
-- Date: {selected_email['date']}
-- To: {selected_email['recipient']}
-- Subject: {selected_email['subject']}
-- Content: {selected_email['content']}
+### SMS Details:
+- From: {selected_message['sender']}
+- Date: {selected_message['date']}
+- Content: {selected_message['content']}
 
 ### Questions:
-1. Is this email a scam or legitimate?
+1. Is this SMS a scam or legitimate?
 2. What specific indicators led you to this conclusion? (List 2-3 key points)
 3. What actions should the recipient take next? (e.g., report, delete)
 4. What preventive measures can the recipient take against similar scams?
@@ -131,16 +108,12 @@ Please provide a concise analysis of the following email for potential phishing 
 if not st.session_state.messages or st.session_state.messages[0]["content"] != prompt:
     st.session_state.messages = [{"role": "user", "content": prompt}]
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Type 're' to reanalyze or enter your own email content"):
+if prompt := st.chat_input("Type 're' to reanalyze or enter your own SMS content"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
