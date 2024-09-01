@@ -102,3 +102,6 @@ if prompt := st.chat_input("Type 're' to test or enter your first email"):
         )
         response = st.write_stream(stream)
     st.session_state.messages.append({"role": "assistant", "content": response})
+
+if st.button("Return to Home", type="primary"):
+    st.switch_page("app.py")
