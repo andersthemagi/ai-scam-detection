@@ -1,26 +1,31 @@
 import streamlit as st
 from openai import OpenAI
 
-# Sample SMS messages for testing
+# Sample SMS messages
 sms_messages = [
     {
-        "sender": "+44 7700 900123",
-        "date": "12 March 2023 at 10:15:00 GMT",
+        "sender": "HMRC",
+        "date": "18 October 2016 at 13:34:36 BST",
+        "recipient": "yourphonenumber",
         "content": (
-            "HSBC: You have successfully added a new payee. If this was not you, "
-            "please click the link below to cancel this action immediately.\n"
-            "http://hsbc-secure.com/cancel-payee\n"
-            "New Tax Calculation: You are eligible to receive a tax refund of 209.27 GBP. "
-            "Please submit the tax refund request."
+            "HMRC: H0928753\n\n"
+            "Hello\n\n"
+            "New Tax Calculation\n"
+            "You are eligible for a tax refund of 209.27 GBP.\n"
+            "Submit the tax refund request.\n\n"
+            "Note: A refund can be delayed for various reasons."
         )
     },
     {
-        "sender": "+1 310 555 9876",
-        "date": "30 August 2024 at 08:45:00 PST",
+        "sender": "PayPal",
+        "date": "1 September 2024 at 09:00:00 UTC",
+        "recipient": "yourphonenumber",
         "content": (
-            "Congratulations! You've won a $1000 gift card. To claim your prize, "
-            "reply to this message with your full name and address. "
-            "We have faced some problems with your account. Please update your information."
+            "Dear Member,\n\n"
+            "Problems with your account. Update now or it will be closed.\n\n"
+            "Confirm your information. It only takes a minute.\n\n"
+            "1. Click the link below.\n"
+            "2. Confirm your account ownership."
         )
     }
 ]
@@ -31,7 +36,7 @@ with st.sidebar:
     st.title("SMS Viewer")
     
     selected_sms_index = st.selectbox(
-        "Select an SMS example", 
+        "Select an example", 
         options=["Example 1", "Example 2"], 
         index=0
     )
@@ -41,11 +46,12 @@ with st.sidebar:
     
     st.subheader(f"From: {selected_sms['sender']}")
     st.write(f"**Date:** {selected_sms['date']}")
-    st.write(f"**Content:**\n{selected_sms['content']}")
+    st.write(f"**To:** {selected_sms['recipient']}")
+    st.write(selected_sms['content'])
 
 st.title("SMS Analyzer")
 
-st.text("--Consistently monitoring SMS messages and scanning for potential scams...--")
+st.text("--Consistently monitoring SMS messages and scanning possible scams...--")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -56,6 +62,7 @@ Please provide a concise analysis of the following SMS for potential phishing or
 ### SMS Details:
 - From: {selected_sms['sender']}
 - Date: {selected_sms['date']}
+- To: {selected_sms['recipient']}
 - Content: {selected_sms['content']}
 
 ### Questions:
@@ -68,7 +75,10 @@ Please provide a concise analysis of the following SMS for potential phishing or
 if not st.session_state.messages or st.session_state.messages[0]["content"] != prompt:
     st.session_state.messages = [{"role": "user", "content": prompt}]
 
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
