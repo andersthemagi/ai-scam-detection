@@ -13,7 +13,6 @@ Made during the [Hackathon for Technical AI Safety Startups.](https://www.apartr
 Created by:
 - [Andres Sepulveda Morales](https://www.linkedin.com/in/andres-sepulveda-morales/)
 - [Doroteya Stoyanova](https://www.linkedin.com/in/doroteya-stoyanova-9a4848199/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
-- [Junfeng (James) Feng](https://www.linkedin.com/in/junfeng-james-feng-5a22a9263/)
 - [Patrick Huang](https://www.linkedin.com/in/patrickphuang/)
 - [Wanjie Zhong](https://www.linkedin.com/in/wanjie-zhong-846b25288/)
 
